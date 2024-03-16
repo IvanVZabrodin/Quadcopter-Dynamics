@@ -1,10 +1,28 @@
+"""
+    Quadcopter simulation
+    Copyright (C) 2024  Ivan Zabrodin
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 import simulation as sim
 import matplotlib.pyplot as plt
-import numpy as np
 from emath import *
 
 simulation_time = 100
 sampletime = 0.1
+rendertime = 0.1 # Make smaller for more accuracy, larger for performance - but not much, because mpl is very slow
 dotsize = 1
 destination = Vector4(0, 0, 100, 0)
 
@@ -25,77 +43,73 @@ for _ in range(int(simulation_time // sampletime)):
     ry.append(drone.rotation.y)
     rz.append(drone.rotation.z)
 
-print("Final Position:", drone.position.z)
+print("Final Position:", drone.position, "Final Rotation:", drone.rotation, "Points simulated:", int(simulation_time // sampletime) + 1)
+
+
+def create_plot_row(dim: tuple[int, int], ypos: int, xlabel: str, ylabel: str, fig: plt.Figure) -> list[plt.Axes]:
+    res = []
+    for x in range(dim[1]):
+        res.append(plt.subplot2grid(dim, (ypos, x), fig=fig, xlabel=xlabel, ylabel=ylabel))
+    return res
+
+
+def create_vector_plot(dim: tuple[int, int], pos: tuple[int, int], xv: list[float], yv: list[float], zv: list[float], start_color, end_color) -> plt.Axes:
+    newx = plt.subplot2grid(dim, pos, projection='3d', fig=fig)
+
+    newx.scatter(xv[0], yv[0], zv[0], c=start_color, s=2)
+    newx.scatter(xv[-1], yv[-1], zv[-1], c=end_color, s=2)
+
+    newx.plot(x, y, z, color='black')
+
+    return newx
+
+
+def sample_for_render(sampletime: float, rendertime: float, points: list[float]) -> list[float]:
+    selectionstep = int(rendertime // sampletime)
+    res = points[::selectionstep]
+    return res
 
 
 fig = plt.figure(constrained_layout=True)
 
-posax = plt.subplot2grid((3, 3), (0, 0), projection='3d', fig=fig)
+[sx, sy, sz] = list(map(lambda p: sample_for_render(sampletime, rendertime, p), [x, y, z]))
+[srx, sry, srz] = list(map(lambda p: sample_for_render(sampletime, rendertime, p), [rx, ry, rz]))
 
-posax.scatter(x[0], y[0], z[0], c='g', s=dotsize)
-posax.scatter(x[-1], y[-1], z[-1], c='r', s=dotsize)
+# 3D Graphs
+posvecplot = create_vector_plot((3, 3), (0, 0), sx, sy, sz, 'g', 'r')
+posvecplot.set_title('Position')
 
-posp = posax.plot(x, y, z, color='black')
-posax.set_title('Position')
-
-rotax = plt.subplot2grid((3, 3), (0, 2), projection='3d', fig=fig)
-
-rotax.scatter(rx[0], ry[0], rz[0], c='g', s=dotsize)
-rotax.scatter(rx[-1], ry[-1], rz[-1], c='r', s=dotsize)
-
-rotp = rotax.plot(rx, ry, rz, color='black')
-rotax.set_title('Rotation')
+rotvecplot = create_vector_plot((3, 3), (0, 2), srx, sry, srz, 'g', 'r')
+rotvecplot.set_title('Rotation')
 
 
-timexax = np.arange(0.0, simulation_time, sampletime)
 
+# 2D Graphs
+timeax = frange(0.0, simulation_time, sampletime)
 
-txax = plt.subplot2grid((3, 3), (1, 0), fig=fig)
+# Position
+posplots = create_plot_row((3, 3), 1, "Time (s)", "Position (m)", fig)
 
-txp = txax.plot(timexax, x, color='black')
-txax.set_title('X position over time')
-txax.set_xlabel('Time (s)')
-txax.set_ylabel('Position (m)')
+posplots[0].plot(timeax, x, color='black')
+posplots[0].set_title('X position over time')
 
+posplots[1].plot(timeax, y, color='black')
+posplots[1].set_title('Y position over time')
 
-tyax = plt.subplot2grid((3, 3), (1, 1), fig=fig)
+posplots[2].plot(timeax, z, color='black')
+posplots[2].set_title('Z position over time')
 
-typ = tyax.plot(timexax, y, color='black')
-tyax.set_title('Y position over time')
-tyax.set_xlabel('Time (s)')
-tyax.set_ylabel('Position (m)')
+# Rotation
+rotplots = create_plot_row((3, 3), 2, "Time (s)", "Rotation (rad)", fig)
 
+rotplots[0].plot(timeax, rx, color='black')
+rotplots[0].set_title('X rotation over time')
 
-tzax = plt.subplot2grid((3, 3), (1, 2), fig=fig)
+rotplots[1].plot(timeax, ry, color='black')
+rotplots[1].set_title('Y rotation over time')
 
-tzp = tzax.plot(timexax, z, color='black')
-tzax.set_title('Z position over time')
-tzax.set_xlabel('Time (s)')
-tzax.set_ylabel('Position (m)')
-
-
-trxax = plt.subplot2grid((3, 3), (2, 0), fig=fig)
-
-txp = trxax.plot(timexax, rx, color='black')
-trxax.set_title('X rotation over time')
-trxax.set_xlabel('Time (s)')
-trxax.set_ylabel('Rotation (rad)')
-
-
-tryax = plt.subplot2grid((3, 3), (2, 1), fig=fig)
-
-typ = tryax.plot(timexax, ry, color='black')
-tryax.set_title('Y rotation over time')
-tryax.set_xlabel('Time (s)')
-tryax.set_ylabel('Rotation (rad)')
-
-
-trzax = plt.subplot2grid((3, 3), (2, 2), fig=fig)
-
-tzp = trzax.plot(timexax, rz, color='black')
-trzax.set_title('Z rotation over time')
-trzax.set_xlabel('Time (s)')
-trzax.set_ylabel('Rotation (rad)')
+rotplots[2].plot(timeax, rz, color='black')
+rotplots[2].set_title('Z rotation over time')
 
 
 plt.show()

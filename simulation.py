@@ -1,3 +1,22 @@
+"""
+    Quadcopter simulation
+    Copyright (C) 2024  Ivan Zabrodin
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
+
 from math import sin, cos, pi
 from emath import *
 
@@ -52,7 +71,6 @@ class Drone:
                 self.position[2],
                 self.rotation[2] % (2 * pi),
                 )
-        print(self.error.z)
         self.error_total += self.error
     
     def update_inputs(self) -> None:
@@ -65,34 +83,34 @@ class Drone:
         forces_sum = self.inputs.z
 
         x = ((forces_sum
-         * (-cos(self.rotation.x) * sin(self.rotation.y) * cos(self.rotation.z)
+          * (-cos(self.rotation.x) * sin(self.rotation.y) * cos(self.rotation.z)
           + sin(self.rotation.x) * sin(self.rotation.z))) / WorldData.mass)
 
         y = ((forces_sum
-             * (cos(self.rotation.x) * sin(self.rotation.y) * sin(self.rotation.z)
-              - sin(self.rotation.y) * cos(self.rotation.z))) / WorldData.mass)
+          * (cos(self.rotation.x) * sin(self.rotation.y) * sin(self.rotation.z)
+          - sin(self.rotation.y) * cos(self.rotation.z))) / WorldData.mass)
 
         z = ((forces_sum
-             * (cos(self.rotation.x) * cos(self.rotation.y))) 
-              / WorldData.mass - WorldData.gravity)
+          * (cos(self.rotation.x) * cos(self.rotation.y))) 
+          / WorldData.mass - WorldData.gravity)
         
         return Vector3(x, y, z)
 
     def get_rotation_acc(self) -> Vector3:
         x = ((self.rotor_length * self.inputs.x
-         - (WorldData.inertia.z - WorldData.inertia.y)
+          - (WorldData.inertia.z - WorldData.inertia.y)
           * (self.rotational_vel.y * self.rotational_vel.z))
-         / WorldData.inertia.x)
+          / WorldData.inertia.x)
 
         y = ((self.rotor_length * self.inputs.y
-             - (WorldData.inertia.x - WorldData.inertia.z)
-    * (self.rotational_vel.x * self.rotational_vel.z))
-             / WorldData.inertia.y)
+          - (WorldData.inertia.x - WorldData.inertia.z)
+          * (self.rotational_vel.x * self.rotational_vel.z))
+          / WorldData.inertia.y)
 
         z = (((self.kt / self.kf) * self.inputs.w
-             - (WorldData.inertia.y - WorldData.inertia.x)
-              * (self.rotational_vel.x * self.rotational_vel.y))
-             / WorldData.inertia.z)
+          - (WorldData.inertia.y - WorldData.inertia.x)
+          * (self.rotational_vel.x * self.rotational_vel.y))
+          / WorldData.inertia.z)
         
         return Vector3(x, y, z)
 

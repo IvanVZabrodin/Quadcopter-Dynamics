@@ -1,3 +1,21 @@
+"""
+    Quadcopter simulation
+    Copyright (C) 2024  Ivan Zabrodin
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
+
 #  For things like Vector3 implementations for readable code
 
 class Vector3:
@@ -35,6 +53,9 @@ class Vector3:
 
     def __iter__(self):
         return iter([self.x, self.y, self.z])
+
+    def __repr__(self) -> str:
+        return f"({self.x}, {self.y}, {self.z})"
 
 class Vector4:
     def __init__(self, x: float = 0.0, y: float = 0.0, z: float = 0.0, w: float = 0.0) -> None:
@@ -75,3 +96,12 @@ class Vector4:
 
     def __iter__(self):
         return iter([self.x, self.y, self.z, self.w])
+
+    def __repr__(self) -> str:
+        return f"({self.x}, {self.y}, {self.z}, {self.w})"
+
+def frange(start: float, end: float, step: float) -> list[float]:
+    res = []
+    for n in range(int(start // step), int((end - start) // step) + 1):
+        res.append(n * step)
+    return res

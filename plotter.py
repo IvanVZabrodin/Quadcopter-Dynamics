@@ -24,7 +24,7 @@ simulation_time = 100
 sampletime = 0.1
 rendertime = 0.1 # Make smaller for more accuracy, larger for performance - but not much, because mpl is very slow
 dotsize = 1
-destination = Vector4(0, 0, 100, 0)
+destination = Vector4(1, 1, 100, 0)
 
 drone = sim.Drone(destination)
 

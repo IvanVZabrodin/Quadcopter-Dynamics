@@ -86,7 +86,14 @@ class Vector4:
                 self.w - vec[3],
                 )
 
-    def __mul__(self, val: float | int) -> "Vector4":
+    def __mul__(self, val: "float | int | Vector4") -> "Vector4":
+        if isinstance(val, Vector4):
+            return Vector4(
+                    self.x * val.x,
+                    self.y * val.y,
+                    self.z * val.z,
+                    self.w * val.w,
+                    )
         return Vector4(
                 self.x * val,
                 self.y * val,

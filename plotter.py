@@ -16,7 +16,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import simulation as sim
+import pidsimulation as sim
 import matplotlib.pyplot as plt
 from emath import *
 
